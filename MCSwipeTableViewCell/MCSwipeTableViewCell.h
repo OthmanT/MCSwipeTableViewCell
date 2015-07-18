@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
+
 
 @class MCSwipeTableViewCell;
 
@@ -40,6 +42,45 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellMode) {
     /** Upon swipe the cell if automatically swiped back to it's initial position. */
     MCSwipeTableViewCellModeSwitch
 };
+
+/** Describe the type of shadow */
+typedef enum {
+    YIInnerShadowMaskNone       = 0,
+    YIInnerShadowMaskTop        = 1 << 1,
+    YIInnerShadowMaskBottom     = 1 << 2,
+    YIInnerShadowMaskLeft       = 1 << 3,
+    YIInnerShadowMaskRight      = 1 << 4,
+    YIInnerShadowMaskVertical   = YIInnerShadowMaskTop | YIInnerShadowMaskBottom,
+    YIInnerShadowMaskHorizontal = YIInnerShadowMaskLeft | YIInnerShadowMaskRight,
+    YIInnerShadowMaskAll        = YIInnerShadowMaskVertical | YIInnerShadowMaskHorizontal
+} YIInnerShadowMask;
+
+//
+// Ideas from Matt Wilding:
+// http://stackoverflow.com/questions/4431292/inner-shadow-effect-on-uiview-layer
+//
+
+@interface YIInnerShadowLayer : CAShapeLayer
+
+@property (nonatomic) YIInnerShadowMask shadowMask;
+
+@end
+
+
+@interface YIInnerShadowView : UIView
+
+@property (nonatomic, strong, readonly) YIInnerShadowLayer* innerShadowLayer;
+
+@property (nonatomic) YIInnerShadowMask shadowMask;
+
+@property (nonatomic, strong) UIColor* shadowColor;
+@property (nonatomic)         CGFloat  shadowOpacity;
+@property (nonatomic)         CGSize   shadowOffset;
+@property (nonatomic)         CGFloat  shadowRadius;
+
+@property (nonatomic)         CGFloat  cornerRadius;
+
+@end
 
 /**
  *  `MCSwipeCompletionBlock`
@@ -150,6 +191,13 @@ typedef void (^MCSwipeCompletionBlock)(MCSwipeTableViewCell *cell, MCSwipeTableV
 
 /** Boolean to enable/disable the animation of the view during the swipe.  */
 @property (nonatomic, assign, readwrite) BOOL shouldAnimateIcons;
+
+/** 
+ *  Inner Shadow View 
+ *
+ *  This can be called to edit the innter shadow
+ */
+@property (nonatomic, strong) YIInnerShadowView *shadowView;
 
 /**
  *  Configures the properties of a cell.

@@ -37,6 +37,8 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
 @property (nonatomic, strong) UIView *slidingView;
 @property (nonatomic, strong) UIView *activeView;
 
+@property (nonatomic, strong) YIInnerShadowView *innerShadowView;
+
 // Initialization
 - (void)initializer;
 - (void)initDefaults;
@@ -180,6 +182,16 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
     
     _contentScreenshotView = [[UIImageView alloc] initWithImage:contentViewScreenshotImage];
     [self addSubview:_contentScreenshotView];
+    
+
+#warning shadow edit
+    _innerShadowView = [[YIInnerShadowView alloc] initWithFrame:_colorIndicatorView.bounds];
+    _innerShadowView.shadowRadius = 2;
+    _innerShadowView.cornerRadius = 0;
+    _innerShadowView.shadowOpacity= 1;
+    _innerShadowView.shadowMask = YIInnerShadowMaskAll;
+    [self addSubview:_innerShadowView];
+    
 }
 
 - (void)uninstallSwipingView {
@@ -195,6 +207,10 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
     
     [_contentScreenshotView removeFromSuperview];
     _contentScreenshotView = nil;
+    
+#warning shadow edit
+    [_innerShadowView removeFromSuperview];
+    _innerShadowView = nil;
 }
 
 - (void)setViewOfSlidingView:(UIView *)slidingView {
@@ -502,6 +518,7 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
         [self setViewOfSlidingView:view];
         _slidingView.alpha = [self alphaWithPercentage:percentage];
         [self slideViewWithPercentage:percentage view:view isDragging:self.shouldAnimateIcons];
+
     }
     
     // Color
@@ -551,6 +568,15 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
         }
     }
     
+    
+#warning Shadow update here
+    _innerShadowView.frame = CGRectMake(percentage >= 0 ? 0 : self.frame.size.width + self.frame.size.width*percentage,
+                                        0,
+                                        self.frame.size.width*fabs(percentage),
+                                        self.frame.size.height);
+    
+    
+    
     CGSize activeViewSize = view.bounds.size;
     CGRect activeViewFrame = CGRectMake(position.x - activeViewSize.width / 2.0,
                                         position.y - activeViewSize.height / 2.0,
@@ -582,6 +608,7 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
     CGRect frame = _contentScreenshotView.frame;
     frame.origin.x = origin;
     
+    
     // Color
     UIColor *color = [self colorWithPercentage:_currentPercentage];
     if (color) {
@@ -600,6 +627,7 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
 - (void)swipeToOriginWithCompletion:(void(^)(void))completion {
     CGFloat bounceDistance = kMCBounceAmplitude * _currentPercentage;
     
+
     if ([UIView.class respondsToSelector:@selector(animateWithDuration:delay:usingSpringWithDamping:initialSpringVelocity:options:animations:completion:)]) {
         
         [UIView animateWithDuration:_animationDuration delay:0.0 usingSpringWithDamping:_damping initialSpringVelocity:_velocity options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -709,6 +737,230 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
         completionBlock(self, state, mode);
     }
     
+}
+
+@end
+
+
+
+#pragma mark - Shadow Section -
+@implementation YIInnerShadowLayer
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        
+        self.masksToBounds = YES;
+        self.needsDisplayOnBoundsChange = YES;
+        self.shouldRasterize = YES;
+        
+        // Standard shadow stuff
+        [self setShadowColor:[[UIColor colorWithWhite:0 alpha:1] CGColor]];
+        [self setShadowOffset:CGSizeMake(0.0f, 0.0f)];
+        [self setShadowOpacity:1.0f];
+        [self setShadowRadius:5];
+        
+        // Causes the inner region in this example to NOT be filled.
+        [self setFillRule:kCAFillRuleEvenOdd];
+        
+        self.shadowMask = YIInnerShadowMaskAll;
+        
+    }
+    return self;
+}
+
+- (void)layoutSublayers
+{
+    [super layoutSublayers];
+    
+    CGFloat top = (self.shadowMask & YIInnerShadowMaskTop ? self.shadowRadius : 0);
+    CGFloat bottom = (self.shadowMask & YIInnerShadowMaskBottom ? self.shadowRadius : 0);
+    CGFloat left = (self.shadowMask & YIInnerShadowMaskLeft ? self.shadowRadius : 0);
+    CGFloat right = (self.shadowMask & YIInnerShadowMaskRight ? self.shadowRadius : 0);
+    
+    CGRect largerRect = CGRectMake(self.bounds.origin.x - left,
+                                   self.bounds.origin.y - top,
+                                   self.bounds.size.width + left + right,
+                                   self.bounds.size.height + top + bottom);
+    
+    // Create the larger rectangle path.
+    CGMutablePathRef path = CGPathCreateMutable();
+    CGPathAddRect(path, NULL, largerRect);
+    
+    // Add the inner path so it's subtracted from the outer path.
+    // someInnerPath could be a simple bounds rect, or maybe
+    // a rounded one for some extra fanciness.
+    CGFloat cornerRadius = self.cornerRadius;
+    UIBezierPath *bezier;
+    if (cornerRadius) {
+        bezier = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:cornerRadius];
+    } else {
+        bezier = [UIBezierPath bezierPathWithRect:self.bounds];
+    }
+    CGPathAddPath(path, NULL, bezier.CGPath);
+    CGPathCloseSubpath(path);
+    
+    [self setPath:path];
+    
+    CGPathRelease(path);
+}
+
+#pragma mark Accessors
+- (void)setShadowMask:(YIInnerShadowMask)shadowMask
+{
+    _shadowMask = shadowMask;
+    [self setNeedsLayout];
+}
+
+- (void)setShadowColor:(CGColorRef)shadowColor
+{
+    [super setShadowColor:shadowColor];
+    [self setNeedsLayout];
+}
+
+- (void)setShadowOpacity:(float)shadowOpacity
+{
+    [super setShadowOpacity:shadowOpacity];
+    [self setNeedsLayout];
+}
+
+- (void)setShadowOffset:(CGSize)shadowOffset
+{
+    [super setShadowOffset:shadowOffset];
+    [self setNeedsLayout];
+}
+
+- (void)setShadowRadius:(CGFloat)shadowRadius
+{
+    [super setShadowRadius:shadowRadius];
+    [self setNeedsLayout];
+}
+
+- (void)setCornerRadius:(CGFloat)cornerRadius
+{
+    [super setCornerRadius:cornerRadius];
+    [self setNeedsLayout];
+}
+
+@end
+
+
+#pragma mark - ShadowView - 
+@implementation YIInnerShadowView
+
+//+ (Class)layerClass
+//{
+//    return [YIInnerShadowLayer class];
+//}
+
+- (void)_init
+{
+    // add as sublayer so that self.backgroundColor will work nicely
+    _innerShadowLayer = [YIInnerShadowLayer layer];
+    
+    _innerShadowLayer.actions = [NSDictionary dictionaryWithObjectsAndKeys:
+                                 [NSNull null], @"position",
+                                 [NSNull null], @"bounds",
+                                 [NSNull null], @"contents",
+                                 [NSNull null], @"shadowColor",
+                                 [NSNull null], @"shadowOpacity",
+                                 [NSNull null], @"shadowOffset",
+                                 [NSNull null], @"shadowRadius",
+                                 nil];
+    
+    [self.layer addSublayer:_innerShadowLayer];
+    self.layer.masksToBounds = YES;
+    self.userInteractionEnabled = NO;
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self _init];
+    }
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self _init];
+    }
+    return self;
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    _innerShadowLayer.frame = self.layer.bounds;
+}
+
+#pragma mark -
+
+#pragma mark Accessors
+
+- (YIInnerShadowMask)shadowMask
+{
+    return _innerShadowLayer.shadowMask;
+}
+
+- (void)setShadowMask:(YIInnerShadowMask)shadowMask
+{
+    _innerShadowLayer.shadowMask = shadowMask;
+}
+
+- (UIColor *)shadowColor
+{
+    return [UIColor colorWithCGColor:_innerShadowLayer.shadowColor];
+}
+
+- (void)setShadowColor:(UIColor *)shadowColor
+{
+    _innerShadowLayer.shadowColor = shadowColor.CGColor;
+}
+
+- (CGFloat)shadowOpacity
+{
+    return _innerShadowLayer.shadowOpacity;
+}
+
+- (void)setShadowOpacity:(CGFloat)shadowOpacity
+{
+    _innerShadowLayer.shadowOpacity = shadowOpacity;
+}
+
+- (CGSize)shadowOffset
+{
+    return _innerShadowLayer.shadowOffset;
+}
+
+- (void)setShadowOffset:(CGSize)shadowOffset
+{
+    _innerShadowLayer.shadowOffset = shadowOffset;
+}
+
+- (CGFloat)shadowRadius
+{
+    return _innerShadowLayer.shadowRadius;
+}
+
+- (void)setShadowRadius:(CGFloat)shadowRadius
+{
+    _innerShadowLayer.shadowRadius = shadowRadius;
+}
+
+- (CGFloat)cornerRadius;
+{
+    return _innerShadowLayer.cornerRadius;
+}
+
+- (void)setCornerRadius:(CGFloat)cornerRadius;
+{
+    self.layer.cornerRadius = cornerRadius;
+    _innerShadowLayer.cornerRadius = cornerRadius;
 }
 
 @end

@@ -31,6 +31,7 @@
 		7C23B01617DB87F100771FA0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B9CAA5E16E2459D00F376BC /* Foundation.framework */; };
 		7C23B03817DB884A00771FA0 /* MCSwipeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7B9CAA9216E2469900F376BC /* MCSwipeTableViewCell.m */; };
 		7C23B03917DB885D00771FA0 /* MCSwipeTableViewCell.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7B9CAA9116E2469900F376BC /* MCSwipeTableViewCell.h */; };
+		CE08DE5F1B585BDC000F4695 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE08DE5E1B585BDC000F4695 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -77,6 +78,7 @@
 		7C23B01517DB87F100771FA0 /* libMCSwipeTableViewCell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMCSwipeTableViewCell.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C23B01917DB87F100771FA0 /* MCSwipeTableViewCell-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MCSwipeTableViewCell-Prefix.pch"; sourceTree = "<group>"; };
 		7C23B02317DB87F100771FA0 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		CE08DE5E1B585BDC000F4695 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +86,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE08DE5F1B585BDC000F4695 /* QuartzCore.framework in Frameworks */,
 				7B9CAA5D16E2459D00F376BC /* UIKit.framework in Frameworks */,
 				7B9CAA5F16E2459D00F376BC /* Foundation.framework in Frameworks */,
 				7B9CAA6116E2459D00F376BC /* CoreGraphics.framework in Frameworks */,
@@ -124,6 +127,7 @@
 		7B9CAA5B16E2459D00F376BC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CE08DE5E1B585BDC000F4695 /* QuartzCore.framework */,
 				7B9CAA5C16E2459D00F376BC /* UIKit.framework */,
 				7B9CAA5E16E2459D00F376BC /* Foundation.framework */,
 				7B9CAA6016E2459D00F376BC /* CoreGraphics.framework */,
