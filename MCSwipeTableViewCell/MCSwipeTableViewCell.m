@@ -185,7 +185,7 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
     
 
 #warning shadow edit
-    _innerShadowView = [[YIInnerShadowView alloc] initWithFrame:_colorIndicatorView.bounds];
+    _innerShadowView = [[YIInnerShadowView alloc] initWithFrame:CGRectZero];
     _innerShadowView.shadowRadius = 2;
     _innerShadowView.cornerRadius = 0;
     _innerShadowView.shadowOpacity= 1;
@@ -557,10 +557,24 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
     else {
         if (_direction == MCSwipeTableViewCellDirectionRight) {
             position.x = [self offsetWithPercentage:(_firstTrigger / 2) relativeToWidth:CGRectGetWidth(self.bounds)];
+            
+            
+#warning Shadow update here
+            
+            _innerShadowView.frame = CGRectMake(percentage >= 0 ? 0 : self.frame.size.width + self.frame.size.width*percentage,
+                                                0,
+                                                self.frame.size.width*fabs(percentage),
+                                                self.frame.size.height);
+            
         }
         
         else if (_direction == MCSwipeTableViewCellDirectionLeft) {
             position.x = CGRectGetWidth(self.bounds) - [self offsetWithPercentage:(_firstTrigger / 2) relativeToWidth:CGRectGetWidth(self.bounds)];
+            
+            _innerShadowView.frame = CGRectMake(percentage >= 0 ? 0 : self.frame.size.width + self.frame.size.width*percentage,
+                                                0,
+                                                self.frame.size.width*fabs(percentage),
+                                                self.frame.size.height);
         }
         
         else {
@@ -568,14 +582,10 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
         }
     }
     
-    
-#warning Shadow update here
     _innerShadowView.frame = CGRectMake(percentage >= 0 ? 0 : self.frame.size.width + self.frame.size.width*percentage,
                                         0,
                                         self.frame.size.width*fabs(percentage),
                                         self.frame.size.height);
-    
-    
     
     CGSize activeViewSize = view.bounds.size;
     CGRect activeViewFrame = CGRectMake(position.x - activeViewSize.width / 2.0,
@@ -585,6 +595,18 @@ typedef NS_ENUM(NSUInteger, MCSwipeTableViewCellDirection) {
     
     activeViewFrame = CGRectIntegral(activeViewFrame);
     _slidingView.frame = activeViewFrame;
+    
+
+
+
+    
+    
+    
+
+
+    
+    
+    
 }
 
 - (void)moveWithDuration:(NSTimeInterval)duration andDirection:(MCSwipeTableViewCellDirection)direction {
